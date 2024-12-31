@@ -14,6 +14,7 @@ const Login = () => {
   const navigate = useNavigate();
 
   const [signupName, setSignupName] = useState("");
+  const [signupAddress, setSignupAddress] = useState("");
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
   const [signupConfirmPassword, setSignupConfirmPassword] = useState("");
@@ -72,6 +73,7 @@ const Login = () => {
         name: signupName,
         email: signupEmail,
         password: signupPassword,
+        address: signupAddress,
       },
     };
     const jsonString = JSON.stringify(jsonData);
@@ -89,6 +91,7 @@ const Login = () => {
         setEmail("");
         setPassword("");
         setConfirmPassword("");
+        setSignupAddress("");
         setTimeout(() => {
           setLoadingSignUp(false);
           document.getElementById("registration_modal").close();
@@ -259,6 +262,28 @@ const Login = () => {
                 />
               </label>
             </div>
+
+            <div className="form-control mb-2">
+              <label className="input input-bordered flex items-center gap-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 16 16"
+                  fill="currentColor"
+                  className="h-4 w-4 opacity-70"
+                >
+                  <path d="M8 0C5.243 0 3 2.243 3 5c0 2.062 2.175 5.024 4.202 7.329a.5.5 0 0 0 .796 0C9.825 10.024 12 7.062 12 5c0-2.757-2.243-5-4-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z" />
+                </svg>
+
+                <input
+                  type="text"
+                  className="grow"
+                  placeholder="Address"
+                  value={signupAddress}
+                  onChange={(e) => setSignupAddress(e.target.value)}
+                />
+              </label>
+            </div>
+
             <div className="form-control mb-2">
               <label className="input input-bordered flex items-center gap-2">
                 <svg

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { HiUserCircle } from "react-icons/hi2";
 
 const Admin = () => {
-  const [transactionsData, setTransactionsData] = useState([]); 
+  const [transactionsData, setTransactionsData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedBranch, setSelectedBranch] = useState("All");
 
@@ -14,7 +14,12 @@ const Admin = () => {
           throw new Error("Failed to fetch transactions");
         }
         const data = await response.json();
-        setTransactionsData(data.data || []); 
+
+        const sortedTransactions = data.data.sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
+
+        setTransactionsData(sortedTransactions);
       } catch (error) {
         console.error("Error fetching transactions:", error);
         setTransactionsData([]);
@@ -34,9 +39,8 @@ const Admin = () => {
     return matchesSearch && matchesBranch;
   });
 
-
   const totalSalesByBranch = transactionsData.reduce((acc, transaction) => {
-    const total = parseFloat(transaction.total); 
+    const total = parseFloat(transaction.total);
     if (!isNaN(total)) {
       acc[transaction.branch_name] = acc[transaction.branch_name]
         ? acc[transaction.branch_name] + total
@@ -44,7 +48,7 @@ const Admin = () => {
     }
     return acc;
   }, {});
-  
+
   const sortedBranches = Object.entries(totalSalesByBranch).sort(
     (a, b) => b[1] - a[1]
   );
@@ -97,57 +101,59 @@ const Admin = () => {
               className="select select-bordered select-success w-full md:w-auto"
             >
               <option value="All">All Branches</option>
-              {Array.from(new Set(transactionsData.map((t) => t.branch_name))).map(
-                (branch_name) => (
-                  <option key={branch_name} value={branch_name}>
-                    {branch_name}
-                  </option>
-                )
-              )}
+              {Array.from(
+                new Set(transactionsData.map((t) => t.branch_name))
+              ).map((branch_name) => (
+                <option key={branch_name} value={branch_name}>
+                  {branch_name}
+                </option>
+              ))}
             </select>
           </div>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="col-span-1 lg:col-span-2">
-          <div className="bg-white shadow-xl rounded-lg p-5">
-            <div className="p-4 border-b bg-base-100">
-              <h2 className="text-lg font-semibold text-success">
-                Transaction History
-              </h2>
-            </div>
-            <div className="overflow-x-auto" style={{ maxHeight: "60vh", overflowY: "auto" }}>
-              <table className="table table-zebra w-full">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Branch</th>
-                    <th>Product</th>
-                    <th>Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredTransactions.length > 0 ? (
-                    filteredTransactions.map((transaction, index) => (
-                      <tr key={index}>
-                        <td>{transaction.date}</td>
-                        <td>{transaction.branch_name}</td>
-                        <td>{transaction.product_name}</td>
-                        <td>${transaction.total}</td>
-                      </tr>
-                    ))
-                  ) : (
+          <div className="col-span-1 lg:col-span-2">
+            <div className="bg-white shadow-xl rounded-lg p-5">
+              <div className="p-4 border-b bg-base-100">
+                <h2 className="text-lg font-semibold text-success">
+                  Transaction History
+                </h2>
+              </div>
+              <div
+                className="overflow-x-auto"
+                style={{ maxHeight: "60vh", overflowY: "auto" }}
+              >
+                <table className="table table-zebra w-full">
+                  <thead>
                     <tr>
-                      <td colSpan="4" className="text-center text-gray-500">
-                        No transactions found.
-                      </td>
+                      <th>Date</th>
+                      <th>Branch</th>
+                      <th>Product</th>
+                      <th>Amount</th>
                     </tr>
-                  )}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {filteredTransactions.length > 0 ? (
+                      filteredTransactions.map((transaction, index) => (
+                        <tr key={index}>
+                          <td>{transaction.date}</td>
+                          <td>{transaction.branch_name}</td>
+                          <td>{transaction.product_name}</td>
+                          <td>${transaction.total}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="4" className="text-center text-gray-500">
+                          No transactions found.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
-        </div>
-
 
           <div className="bg-white shadow-xl rounded-lg">
             <div className="p-4 border-b bg-base-100">

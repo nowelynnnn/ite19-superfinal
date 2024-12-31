@@ -216,7 +216,7 @@ const Navbar = () => {
       {/* Cart Modal */}
       {isCartModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg w-11/12 md:w-1/3 p-6 relative">
+          <div className="bg-white rounded-lg shadow-lg max-w-xl w-full p-6 relative">
             <button
               onClick={toggleCartModal}
               className="absolute top-4 right-4 text-gray-500 font-bold"
@@ -241,38 +241,41 @@ const Navbar = () => {
                     checked={selectedItems.includes(item.id)}
                     onChange={() => toggleSelection(item.id)} // Toggle selection for this item
                   />
-                  <div className="flex items-center">
+                  <div className="flex items-center space-x-4 w-full ms-5">
+                    {/* Product Image */}
                     <img
                       src={item.image}
                       alt={item.name}
                       className="w-16 h-16 object-contain rounded-md"
                     />
-                    <div>
-                      <h4 className="text-md font-semibold text-gray-800">
+
+                    {/* Product Name in the center */}
+                    <div className="flex-1">
+                      <h4 className="text-md font-semibold text-gray-800 truncate">
                         {item.product_name}
                       </h4>
                       <p className="text-sm text-gray-500">
                         Price: ₱{item.price}
                       </p>
                     </div>
-                  </div>
 
-                  {/* Quantity Input Field */}
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="number"
-                      value={item.quantity}
-                      min="1"
-                      onChange={(e) =>
-                        handleQuantityChange(item.id, e.target.value)
-                      } // Handle quantity change
-                      className="w-12 text-center border rounded-md"
-                    />
-                    {/* Display the Total Price dynamically based on quantity */}
-                    <p className="text-lg font-bold text-green-600">
-                      ₱{(item.price * item.quantity).toFixed(2)}{" "}
-                      {/* Total Price for the individual product */}
-                    </p>
+                    {/* Quantity Input and Total Price on the Right */}
+                    <div className="flex items-center gap-2 justify-end">
+                      <input
+                        type="number"
+                        value={item.quantity}
+                        min="1"
+                        onChange={(e) =>
+                          handleQuantityChange(item.id, e.target.value)
+                        } // Handle quantity change
+                        className="w-12 text-center border rounded-md"
+                      />
+                      {/* Display the Total Price dynamically based on quantity */}
+                      <p className="text-lg font-bold text-green-600">
+                        ₱{(item.price * item.quantity).toFixed(2)}{" "}
+                        {/* Total Price for the individual product */}
+                      </p>
+                    </div>
                   </div>
                 </div>
               ))}

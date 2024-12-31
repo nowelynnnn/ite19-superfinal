@@ -151,6 +151,10 @@ const Products = () => {
     setIsConfirmationModalVisible(false);
   };
 
+  const closeCartConfirmationModal = () => {
+    setIsProductAddedModalVisible(false);
+    window.location.reload();
+  };
   return (
     <>
       <Navbar />
@@ -338,7 +342,7 @@ const Products = () => {
             </p>
             <div className="flex justify-end gap-4">
               <button
-                onClick={() => setIsProductAddedModalVisible(false)} // Close modal
+                onClick={closeCartConfirmationModal} // Close modal
                 className="bg-gray-200 hover:bg-gray-300 text-gray-600 px-4 py-2 rounded-md"
               >
                 Continue Shopping
