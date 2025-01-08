@@ -6,18 +6,21 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 const Navbar = () => {
+  // Get user details from session storage
   const userDetails = JSON.parse(sessionStorage.getItem("user"));
-  const [selectedItems, setSelectedItems] = useState([]);
-  const [cartItems, setCartItems] = useState([]);
-  const [isCartModalOpen, setIsCartModalOpen] = useState(false);
-  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
-  const [isPurchaseSuccessModalOpen, setIsPurchaseSuccessModalOpen] =
-    useState(false);
+
+  // State variables
+  const [selectedItems, setSelectedItems] = useState([]); // Tracks selected items in the cart
+  const [cartItems, setCartItems] = useState([]); //Stores items in the user's cart
+  const [isCartModalOpen, setIsCartModalOpen] = useState(false); // cart modal visibility
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false); // history modal visibility
+  const [isPurchaseSuccessModalOpen, setIsPurchaseSuccessModalOpen] = useState(false); // success modal visibility
 
   useEffect(() => {
-    fetchCartItems();
+    fetchCartItems(); // Load cart items from the server
   }, []);
 
+  // Fetch cart items from the server
   const fetchCartItems = async () => {
     try {
       const response = await fetch(
@@ -25,7 +28,7 @@ const Navbar = () => {
       );
       if (response.ok) {
         const data = await response.json();
-        setCartItems(data.data);
+        setCartItems(data.data); // Update cartItems with data from the server
       } else {
         console.error("Failed to fetch cart items");
       }
@@ -34,18 +37,22 @@ const Navbar = () => {
     }
   };
 
+   // Toggle cart modal visibility
   const toggleCartModal = () => {
     setIsCartModalOpen(!isCartModalOpen);
   };
 
+   // Toggle purchase history modal visibility
   const toggleHistoryModal = () => {
     setIsHistoryModalOpen(!isHistoryModalOpen);
   };
 
+  // Toggle purchase success modal visibility
   const togglePurchaseSuccessModal = () => {
     setIsPurchaseSuccessModalOpen(!isPurchaseSuccessModalOpen);
   };
 
+   // Update quantity of a specific item
   const handleQuantityChange = (id, newQuantity) => {
     setCartItems((prevItems) =>
       prevItems.map((item) =>
@@ -60,6 +67,7 @@ const Navbar = () => {
     );
   };
 
+   // Calculate total price for selected items
   const getTotalPrice = () => {
     return cartItems
       .filter((item) => selectedItems.includes(item.id)) // Only include selected items
@@ -67,23 +75,26 @@ const Navbar = () => {
       .toFixed(2); // Format to 2 decimal places
   };
 
+   // Toggle selection of an item
   const toggleSelection = (productId) => {
     setSelectedItems((prevSelectedItems) =>
       prevSelectedItems.includes(productId)
-        ? prevSelectedItems.filter((id) => id !== productId)
-        : [...prevSelectedItems, productId]
+        ? prevSelectedItems.filter((id) => id !== productId) // Deselect if already selected
+        : [...prevSelectedItems, productId] // Add to selected items
     );
   };
 
+  // Handle checkout action
   const handleCheckout = async (e) => {
     e.preventDefault();
 
-    const today = new Date();
-    const formattedDate = today.toISOString().split("T")[0];
+    const today = new Date(); // Get today's date
+    const formattedDate = today.toISOString().split("T")[0]; // Format date as YYYY-MM-DD
     const selectedCartItems = cartItems.filter((item) =>
       selectedItems.includes(item.id)
     );
 
+     // Loop through selected items and save to transactions
     for (const item of selectedCartItems) {
       const cartData = {
         data: {
@@ -119,9 +130,10 @@ const Navbar = () => {
       }
     }
 
-    handleDelete(selectedCartItems);
+    handleDelete(selectedCartItems); // Remove checked-out items from the cart
   };
 
+  // Delete items from the cart
   const handleDelete = async (items) => {
     for (const item of items) {
       try {
@@ -139,10 +151,10 @@ const Navbar = () => {
           const data = await response.json();
           setCart((prevCart) =>
             prevCart.filter((cartItem) => cartItem.id !== item.id)
-          );
+          ); // Remove item from cart state
           setSelectedItems((prevSelectedItems) =>
             prevSelectedItems.filter((id) => id !== item.id)
-          );
+          ); // Remove item from selected items
           console.log(`Item with id ${item.id} deleted:`, data);
         } else {
           const errorData = await response.text();
@@ -153,12 +165,14 @@ const Navbar = () => {
       }
     }
     alert("Checkout successful");
-    window.location.reload();
+    window.location.reload(); // Reload page to refresh cart
   };
 
   return (
     <>
+     {/* Navbar */}
       <div className="navbar bg-green-500 px-5">
+        {/* Left side: Logo and title */}
         <div className="flex-1">
           <Link to="/dashboard">
             <img className="h-14 w-14" src="login.png" alt="logo" />
@@ -168,7 +182,9 @@ const Navbar = () => {
           </Link>
         </div>
 
+        {/* Right side: Cart and user options */}
         <div className="flex-none gap-4">
+          {/* Cart icon */}
           <div className="dropdown dropdown-end text-white">
             <div
               tabIndex={0}
@@ -180,6 +196,8 @@ const Navbar = () => {
               <p className="text-md font-bold">Cart</p>
             </div>
           </div>
+
+          {/* User profile with dropdown*/}
           <div className="dropdown dropdown-end font-bold">
             <div
               tabIndex={0}

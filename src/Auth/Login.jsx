@@ -2,38 +2,46 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Login = () => {
+
+   // States for managing form dataS
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [loadingSignIn, setLoadingSignIn] = useState(false);
-  const [loadingSignUp, setLoadingSignUp] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // Toggles visibility of the password field
+  const [loadingSignIn, setLoadingSignIn] = useState(false); // if the login process is loading
+  const [loadingSignUp, setLoadingSignUp] = useState(false); // if the sign-up process is loading
   const [error, setError] = useState(null);
-  const [role, setRole] = useState("customers");
-  const navigate = useNavigate();
 
+  // Determines the role (customer/admin)
+  const [role, setRole] = useState("customers");
+  const navigate = useNavigate(); // Provides navigation functionality 
+
+   // Additional states for the sign-up form and stores data
   const [signupName, setSignupName] = useState("");
   const [signupAddress, setSignupAddress] = useState("");
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
-  const [signupConfirmPassword, setSignupConfirmPassword] = useState("");
+  const [signupConfirmPassword, setSignupConfirmPassword] = useState(""); // Confirms the password during sign-up
 
+  // Handle login
   const handleSignIn = async (e) => {
     e.preventDefault();
     setLoadingSignIn(true);
     setError(null);
 
     try {
+       // Fetch user data from Strapi
       const response = await fetch(
         `http://localhost:1337/api/${role}?filters[email][$eq]=${email}`
       );
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to fetch data");
+        throw new Error(data.error || "Failed to fetch data"); //iF NAAY ERROR
       }
 
+       // Handle incorrect email
       if (data.data.length === 0) {
         setError("Wrong Credentials");
         alert("wrong credentials");
@@ -41,14 +49,16 @@ const Login = () => {
         return;
       }
 
+      //Email is correct password is wrong
       const user = data.data[0];
       if (user.password !== password) {
         setError("Incorrect password.");
         return;
       }
 
-      sessionStorage.setItem("user", JSON.stringify(user));
+      sessionStorage.setItem("user", JSON.stringify(user)); // Save user data to session storage or temp storage sa browser
 
+       // Navigate to different dashboards based on role
       if (role === "admins") {
         navigate("/admin");
       } else {
@@ -56,17 +66,20 @@ const Login = () => {
       }
       setLoadingSignIn(false);
     } catch (err) {
-      setError(err.message || "An error occurred while logging in.");
+      setError(err.message || "An error occurred while logging in."); // Handle unexpected errors
     }
   };
 
+  // Handle sign-up
   const handleSignUp = async (e) => {
     e.preventDefault();
     setLoadingSignUp(true);
-    if (password !== confirmPassword) {
+    if (signupPassword !== signupConfirmPassword) {
       alert("Passwords do not match!");
       return;
     }
+
+  // Prepare data for the API request
     const formData = new FormData();
     const jsonData = {
       data: {
@@ -79,9 +92,9 @@ const Login = () => {
     const jsonString = JSON.stringify(jsonData);
     try {
       const response = await fetch(`http://localhost:1337/api/${role}`, {
-        method: "POST",
+        method: "POST", //request kuhaon ang data sa strapi
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/json", // JSON payload
         },
         body: jsonString,
       });
@@ -110,8 +123,11 @@ const Login = () => {
 
   return (
     <>
+     {/* Main UI layout */}
       <div className="flex justify-center items-center min-h-screen bg-green-400">
         <div className="card w-full max-w-4xl bg-base-100 shadow-xl flex flex-col lg:flex-row border p-3">
+
+           {/* Logo & Name */}
           <div className="w-full lg:w-1/2 p-8 border-r-2">
             <div className="flex gap-2 mb-3 justify-center">
               <img className="h-14 w-14" src="login.png" alt="logo" />
@@ -122,7 +138,11 @@ const Login = () => {
             <p className="mb-6 text-gray-600 flex justify-center">
               Shop to your Comfort and Convenience
             </p>
+
+            {/* Login form */}  
             <form onSubmit={handleSignIn}>
+
+               {/* Email field */}
               <div className="form-control mb-2">
                 <label className="input input-bordered flex items-center gap-2">
                   <svg
@@ -143,6 +163,8 @@ const Login = () => {
                   />
                 </label>
               </div>
+
+               {/* Password field */}
               <div className="form-control mb-4">
                 <label className="input input-bordered flex items-center gap-2">
                   <svg
@@ -165,6 +187,8 @@ const Login = () => {
                     onChange={(e) => setPassword(e.target.value)}
                   />
                 </label>
+                
+                {/* Show Passwod */}
                 <div className="flex items-center mt-4">
                   <input
                     type="checkbox"
@@ -176,7 +200,10 @@ const Login = () => {
                     Show Password
                   </label>
                 </div>
+
               </div>
+
+              {/* Role selection and sign-in button */}
               <div className="flex gap-2">
                 <select
                   className="select select-bordered w-1/2"
@@ -186,6 +213,8 @@ const Login = () => {
                   <option value="customers">Customer</option>
                   <option value="admins">Admin</option>
                 </select>
+
+                {/* Sign in button */}
                 <button
                   type="submit"
                   className="btn btn-success text-white w-2/3 flex items-center justify-center"
@@ -201,7 +230,9 @@ const Login = () => {
                   )}
                 </button>
               </div>
+
             </form>
+            {/* Don't have account */}
             <div className="flex justify-center mt-6">
               <p className="text-sm">
                 Don't have an account? &nbsp;
@@ -216,6 +247,8 @@ const Login = () => {
               </p>
             </div>
           </div>
+
+         {/* Right image panel */}
           <div
             className="w-full lg:w-1/2 bg-cover bg-center"
             style={{
@@ -231,6 +264,8 @@ const Login = () => {
       <dialog id="registration_modal" className="modal">
         <div className="modal-box w-11/12 max-w-md p-8">
           <form method="dialog" onSubmit={handleSignUp}>
+
+            {/* X button to exit modal */}
             <button
               className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
               type="button"
@@ -240,9 +275,12 @@ const Login = () => {
             >
               ✕
             </button>
+
             <h3 className="font-bold text-2xl mb-4 text-green-700">
               | Create an account
             </h3>
+
+             {/* Fields for name, address, and email */}
             <div className="form-control mb-2">
               <label className="input input-bordered flex items-center gap-2">
                 <svg
@@ -263,6 +301,7 @@ const Login = () => {
               </label>
             </div>
 
+            {/* Address */}
             <div className="form-control mb-2">
               <label className="input input-bordered flex items-center gap-2">
                 <svg
@@ -284,6 +323,7 @@ const Login = () => {
               </label>
             </div>
 
+            {/* Email */}
             <div className="form-control mb-2">
               <label className="input input-bordered flex items-center gap-2">
                 <svg
@@ -304,6 +344,8 @@ const Login = () => {
                 />
               </label>
             </div>
+
+            {/* Password */}
             <div className="form-control mb-2">
               <label className="input input-bordered flex items-center gap-2">
                 <svg
@@ -326,6 +368,8 @@ const Login = () => {
                 />
               </label>
             </div>
+
+            {/* Confirm Passsword */}
             <div className="form-control mb-5">
               <label className="input input-bordered flex items-center gap-2">
                 <svg
@@ -348,6 +392,8 @@ const Login = () => {
                 />
               </label>
             </div>
+
+            {/* Select Role Option to Sign up */}
             <div className="flex gap-2">
               <select
                 className="select select-bordered w-1/2"
@@ -372,9 +418,12 @@ const Login = () => {
                 )}
               </button>
             </div>
+
           </form>
         </div>
       </dialog>
+      {/* Registration Modal */}
+
     </>
   );
 };

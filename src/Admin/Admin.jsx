@@ -2,19 +2,24 @@ import React, { useState, useEffect } from "react";
 import { HiUserCircle } from "react-icons/hi2";
 
 const Admin = () => {
+
+  // State variables to manage transactions data, search input, and branch filter
   const [transactionsData, setTransactionsData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedBranch, setSelectedBranch] = useState("All");
 
+  // Effect to fetch transactions data on component mount or admin dashboard
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
-        const response = await fetch("http://localhost:1337/api/transactions");
+         // Fetching transaction data from the API/strapi host
+        const response = await fetch("http://localhost:1337/api/transactions?pagination[pageSize]=1000");
         if (!response.ok) {
           throw new Error("Failed to fetch transactions");
         }
         const data = await response.json();
 
+        // Sorting transactions by date in descending order/ aron mas makita new transaction
         const sortedTransactions = data.data.sort(
           (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
         );
@@ -27,9 +32,10 @@ const Admin = () => {
     };
 
     fetchTransactions();
-    console.log(totalSalesByBranch);
+    console.log(totalSalesByBranch); // Debugging statement for total sales
   }, []);
 
+  // Filtering transactions based on search term and selected branch
   const filteredTransactions = transactionsData.filter((transaction) => {
     const matchesSearch = transaction.product_name
       .toLowerCase()
@@ -39,6 +45,7 @@ const Admin = () => {
     return matchesSearch && matchesBranch;
   });
 
+  // Calculating total sales for each branch
   const totalSalesByBranch = transactionsData.reduce((acc, transaction) => {
     const total = parseFloat(transaction.total);
     if (!isNaN(total)) {
@@ -49,12 +56,14 @@ const Admin = () => {
     return acc;
   }, {});
 
+  // Sorting branches by total sales in descending order
   const sortedBranches = Object.entries(totalSalesByBranch).sort(
     (a, b) => b[1] - a[1]
   );
 
   return (
     <>
+     {/* Navbar with logo and admin dropdown */}
       <div className="navbar bg-green-500 px-5">
         <div className="flex-1">
           <img className="h-14 w-14" src="login.png" alt="logo" />
@@ -74,6 +83,7 @@ const Admin = () => {
               tabIndex={0}
               className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow"
             >
+              {/* Logout Dropdown */}
               <li className="mt-2">
                 <a href="/" className="text-gray-600">
                   Logout
@@ -81,13 +91,16 @@ const Admin = () => {
               </li>
             </ul>
           </div>
-        </div>
+        </div>  
       </div>
 
+      {/* Main content area */}
       <div className="p-6 bg-base-200 min-h-screen space-y-8">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center">
           <h1 className="text-3xl font-bold text-green-800">Sales Dashboard</h1>
           <div className="mt-4 md:mt-0 flex gap-2">
+
+             {/* Search input for filtering transactions */}
             <input
               type="text"
               placeholder="Search products..."
@@ -95,6 +108,8 @@ const Admin = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="input input-bordered input-success w-full md:w-60"
             />
+
+             {/* Dropdown to select a branch */}
             <select
               value={selectedBranch}
               onChange={(e) => setSelectedBranch(e.target.value)}
@@ -111,8 +126,12 @@ const Admin = () => {
             </select>
           </div>
         </div>
+
+         {/* Dashboard with transaction history and branch sales */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="col-span-1 lg:col-span-2">
+
+            {/* Transaction history table */}
             <div className="bg-white shadow-xl rounded-lg p-5">
               <div className="p-4 border-b bg-base-100">
                 <h2 className="text-lg font-semibold text-success">
@@ -132,14 +151,16 @@ const Admin = () => {
                       <th>Amount</th>
                     </tr>
                   </thead>
-                  <tbody>
+
+                  {/* For each transaction, it creates a <tr> (table row) with its details. */}
+                  <tbody> 
                     {filteredTransactions.length > 0 ? (
                       filteredTransactions.map((transaction, index) => (
                         <tr key={index}>
                           <td>{transaction.date}</td>
                           <td>{transaction.branch_name}</td>
                           <td>{transaction.product_name}</td>
-                          <td>${transaction.total}</td>
+                          <td>₱{transaction.total}</td>
                         </tr>
                       ))
                     ) : (
@@ -155,6 +176,7 @@ const Admin = () => {
             </div>
           </div>
 
+          {/* Total sales by branch */} 
           <div className="bg-white shadow-xl rounded-lg">
             <div className="p-4 border-b bg-base-100">
               <h2 className="text-lg font-semibold text-success">
@@ -172,7 +194,7 @@ const Admin = () => {
                       {index + 1}. {branch}
                     </h3>
                     <p className="text-sm text-gray-600">
-                      Total Sales: ${total}
+                      Total Sales: ₱{total}
                     </p>
                   </div>
                 </div>
@@ -182,6 +204,7 @@ const Admin = () => {
         </div>
       </div>
 
+       {/* Footer */}
       <footer className="bg-base-300 py-6 mt-3">
         <div className="container mx-auto text-center font-bold">
           <p className="text-sm">
