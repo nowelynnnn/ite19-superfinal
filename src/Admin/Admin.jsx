@@ -1,19 +1,24 @@
 import React, { useState, useEffect } from "react";
 import { HiUserCircle } from "react-icons/hi2";
+import { AiFillFileExcel } from "react-icons/ai";
+import * as XLSX from "xlsx";
 
 const Admin = () => {
-
   // State variables to manage transactions data, search input, and branch filter
   const [transactionsData, setTransactionsData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedBranch, setSelectedBranch] = useState("All");
 
+  const [filterByToday, setFilterByToday] = useState(false);
+
   // Effect to fetch transactions data on component mount or admin dashboard
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
-         // Fetching transaction data from the API/strapi host
-        const response = await fetch("http://localhost:1337/api/transactions?pagination[pageSize]=1000");
+        // Fetching transaction data from the API/strapi host
+        const response = await fetch(
+          "http://localhost:1337/api/transactions?pagination[pageSize]=1000"
+        );
         if (!response.ok) {
           throw new Error("Failed to fetch transactions");
         }
@@ -36,13 +41,15 @@ const Admin = () => {
   }, []);
 
   // Filtering transactions based on search term and selected branch
+  const todayDate = new Date().toISOString().split("T")[0];
   const filteredTransactions = transactionsData.filter((transaction) => {
     const matchesSearch = transaction.product_name
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
     const matchesBranch =
       selectedBranch === "All" || transaction.branch_name === selectedBranch;
-    return matchesSearch && matchesBranch;
+    const matchesToday = !filterByToday || transaction.date === todayDate; // Check for today's sales
+    return matchesSearch && matchesBranch && matchesToday;
   });
 
   // Calculating total sales for each branch
@@ -61,9 +68,28 @@ const Admin = () => {
     (a, b) => b[1] - a[1]
   );
 
+  const exportToExcel = () => {
+    // Prepare data for Excel
+    const worksheetData = filteredTransactions.map((transaction) => ({
+      Date: transaction.date,
+      Branch: transaction.branch_name,
+      Product: transaction.product_name,
+      Amount: transaction.total,
+      "Mode of Payment": transaction.payment_mode,
+    }));
+
+    // Create a worksheet and a workbook
+    const worksheet = XLSX.utils.json_to_sheet(worksheetData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Transactions");
+
+    // Export the workbook as an Excel file
+    XLSX.writeFile(workbook, "Transactions.xlsx");
+  };
+
   return (
     <>
-     {/* Navbar with logo and admin dropdown */}
+      {/* Navbar with logo and admin dropdown */}
       <div className="navbar bg-green-500 px-5">
         <div className="flex-1">
           <img className="h-14 w-14" src="login.png" alt="logo" />
@@ -91,7 +117,7 @@ const Admin = () => {
               </li>
             </ul>
           </div>
-        </div>  
+        </div>
       </div>
 
       {/* Main content area */}
@@ -99,8 +125,7 @@ const Admin = () => {
         <div className="flex flex-col md:flex-row md:justify-between md:items-center">
           <h1 className="text-3xl font-bold text-green-800">Sales Dashboard</h1>
           <div className="mt-4 md:mt-0 flex gap-2">
-
-             {/* Search input for filtering transactions */}
+            {/* Search input for filtering transactions */}
             <input
               type="text"
               placeholder="Search products..."
@@ -109,7 +134,7 @@ const Admin = () => {
               className="input input-bordered input-success w-full md:w-60"
             />
 
-             {/* Dropdown to select a branch */}
+            {/* Dropdown to select a branch */}
             <select
               value={selectedBranch}
               onChange={(e) => setSelectedBranch(e.target.value)}
@@ -124,19 +149,37 @@ const Admin = () => {
                 </option>
               ))}
             </select>
+
+            <button
+              className="btn btn-success flex items-center gap-2 text-white"
+              onClick={exportToExcel}
+            >
+              <AiFillFileExcel size={20} />
+              Export via Excel
+            </button>
           </div>
         </div>
 
-         {/* Dashboard with transaction history and branch sales */}
+        {/* Dashboard with transaction history and branch sales */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="col-span-1 lg:col-span-2">
-
             {/* Transaction history table */}
             <div className="bg-white shadow-xl rounded-lg p-5">
-              <div className="p-4 border-b bg-base-100">
+              <div className="p-4 border-b bg-base-100 flex justify-between">
                 <h2 className="text-lg font-semibold text-success">
                   Transaction History
                 </h2>
+                <div className="form-control">
+                  <label className="label cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="checkbox checkbox-success"
+                      checked={filterByToday}
+                      onChange={(e) => setFilterByToday(e.target.checked)}
+                    />
+                    <span className="label-text ms-2">Show Today's Sales</span>
+                  </label>
+                </div>
               </div>
               <div
                 className="overflow-x-auto"
@@ -149,11 +192,12 @@ const Admin = () => {
                       <th>Branch</th>
                       <th>Product</th>
                       <th>Amount</th>
+                      <th>Mode of Payment</th>
                     </tr>
                   </thead>
 
                   {/* For each transaction, it creates a <tr> (table row) with its details. */}
-                  <tbody> 
+                  <tbody>
                     {filteredTransactions.length > 0 ? (
                       filteredTransactions.map((transaction, index) => (
                         <tr key={index}>
@@ -161,6 +205,7 @@ const Admin = () => {
                           <td>{transaction.branch_name}</td>
                           <td>{transaction.product_name}</td>
                           <td>₱{transaction.total}</td>
+                          <td>{transaction.payment_mode}</td>
                         </tr>
                       ))
                     ) : (
@@ -176,7 +221,7 @@ const Admin = () => {
             </div>
           </div>
 
-          {/* Total sales by branch */} 
+          {/* Total sales by branch */}
           <div className="bg-white shadow-xl rounded-lg">
             <div className="p-4 border-b bg-base-100">
               <h2 className="text-lg font-semibold text-success">
@@ -204,7 +249,7 @@ const Admin = () => {
         </div>
       </div>
 
-       {/* Footer */}
+      {/* Footer */}
       <footer className="bg-base-300 py-6 mt-3">
         <div className="container mx-auto text-center font-bold">
           <p className="text-sm">

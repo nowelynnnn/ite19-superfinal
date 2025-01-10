@@ -11,20 +11,22 @@ const Products = () => {
   // Get user details from sessionStorage
   const userDetails = JSON.parse(sessionStorage.getItem("user"));
 
+  const [selectedPaymentMode, setSelectedPaymentMode] = useState("");
+
   // States for managing data
   const [products, setProducts] = useState([]);
   const [branches, setBranches] = useState([]);
   const [cart, setCart] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false); // Checkout modal visibility
   const [isConfirmationModalVisible, setIsConfirmationModalVisible] =
-    useState(false); // Order confirmation modal 
+    useState(false); // Order confirmation modal
   const [selectedProduct, setSelectedProduct] = useState(null); // Product selected for checkout
   const [quantity, setQuantity] = useState(1); // Quantity of the selected product
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBranchId, setSelectedBranchId] = useState(""); // Selected branch filter
   const [isProductAddedModalVisible, setIsProductAddedModalVisible] =
     useState(false); // Product added to cart modal visibility
- 
+
   // Fetch branch data from API
   useEffect(() => {
     const fetchBranch = async () => {
@@ -37,7 +39,7 @@ const Products = () => {
       }
     };
     fetchBranch();
-  }, []); // Runs only once 
+  }, []); // Runs only once
 
   // Fetch product data based on the selected category
   useEffect(() => {
@@ -111,6 +113,12 @@ const Products = () => {
   const handleConfirmOrder = async () => {
     if (!selectedProduct) return; // Guard against missing product
 
+    // Validate that a payment mode has been selected
+    if (!selectedPaymentMode) {
+      alert("Please select a payment mode.");
+      return;
+    }
+
     const today = new Date();
     const formattedDate = today.toISOString().split("T")[0];
 
@@ -122,6 +130,7 @@ const Products = () => {
         customer_name: userDetails.name,
         date: formattedDate,
         branch_name: selectedProduct.branch_name,
+        payment_mode: selectedPaymentMode,
       },
     };
 
@@ -155,7 +164,7 @@ const Products = () => {
     setQuantity(Number(e.target.value));
   };
 
-   // Close modals
+  // Close modals
   const handleCloseModal = () => {
     setIsModalVisible(false);
   };
@@ -170,13 +179,12 @@ const Products = () => {
   };
   return (
     <>
-     {/* Tawagon ang navbar */}
+      {/* Tawagon ang navbar */}
       <Navbar />
 
       {/* Products Section */}
       <section className="bg-base-200 py-6">
         <div className="container mx-auto px-8">
-
           {/* Header with Category and Filters */}
           <div className="mb-5 text-center flex justify-between">
             <div className="flex text-green-700">
@@ -187,15 +195,15 @@ const Products = () => {
               </Link>{" "}
               /
               <h2 className="text-xl font-bold text-center ms-3">
-                {selectedCategory} {/* Displays the currently selected category */}
+                {selectedCategory}{" "}
+                {/* Displays the currently selected category */}
               </h2>
             </div>
 
             {/* Search Bar and Branch Filter */}
             <div className="flex gap-2">
               <label className="input input-bordered flex items-center gap-2">
-
-                 {/* Search Bar */}
+                {/* Search Bar */}
                 <input
                   type="text"
                   className="grow"
@@ -228,7 +236,7 @@ const Products = () => {
                 key={product.id} // Unique key for each product
                 className="p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow border bg-white"
               >
-                 {/* Product Image */}
+                {/* Product Image */}
                 <img
                   src={product.image}
                   alt={product.product_name}
@@ -248,15 +256,14 @@ const Products = () => {
                   Available at {product.branch_name} Branch
                 </p>
 
-                 {/* Price and Add to Cart */}
+                {/* Price and Add to Cart */}
                 <div className="flex justify-between">
-
                   {/* Product Price */}
                   <p className="text-lg font-bold text-green-700 mb-4">
                     ₱{product.product_price}
                   </p>
 
-                   {/* Add to Cart Button */}
+                  {/* Add to Cart Button */}
                   <span
                     className="text-green-700 cursor-pointer flex gap-1"
                     onClick={() => handleAddToCart(product)} //diri ko mag add product to cart
@@ -266,7 +273,7 @@ const Products = () => {
                   </span>
                 </div>
 
-                 {/* Checkout Button */}
+                {/* Checkout Button */}
                 <div className="flex flex-col gap-2">
                   <button
                     onClick={() => handleCheckoutClick(product)} // Proceed to checkout
@@ -323,21 +330,41 @@ const Products = () => {
                 </label>
                 <input
                   type="number"
-                  value={quantity} 
+                  value={quantity}
                   min="1"
                   onChange={handleQuantityChange} // Update quantity
                   className="w-16 border border-gray-300 rounded-md text-center p-1"
                 />
               </div>
 
-               {/* Total Price */}
+              {/* Mode of Payment Dropdown */}
+              <div className="mb-4 flex items-center justify-between">
+                <label
+                  htmlFor="paymentMode"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Mode of Payment:
+                </label>
+                <select
+                  id="paymentMode"
+                  value={selectedPaymentMode} // Bind to a state
+                  onChange={(e) => setSelectedPaymentMode(e.target.value)} // Update state
+                  className="mt-1 block p-1 rounded-md shadow-sm border-gray-300 border"
+                >
+                  <option value="">Select Payment Mode</option>
+                  <option value="Paypal">Paypal</option>
+                  <option value="Cash on Delivery">Cash on Delivery</option>
+                </select>
+              </div>
+
+              {/* Total Price */}
               <p>
                 <strong>Total Price:</strong> ₱
                 {selectedProduct.product_price * quantity}
               </p>
             </div>
 
-             {/* Modal Buttons */}
+            {/* Modal Buttons */}
             <div className="flex justify-end gap-4 mt-5">
               <button
                 onClick={handleCloseModal} // Close modal

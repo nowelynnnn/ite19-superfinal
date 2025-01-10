@@ -34,7 +34,7 @@ const PurchaseHistory = () => {
 
   return (
     <>
-      <div className="container mx-auto p-4">
+      <div className="container mx-auto">
         {/* Horizontal separator */}
         <hr />
 
@@ -42,15 +42,15 @@ const PurchaseHistory = () => {
         <table className="table table-zebra w-full">
           <thead>
             <tr>
-               {/* Table headers */}
+              {/* Table headers */}
               <th>Date</th>
-              <th>Product Name</th>
-              <th>Quantity</th>
+              <th>Product</th>
+              <th>Qty</th>
               <th>Total</th>
+              <th>Payment Mode</th>
             </tr>
           </thead>
           <tbody>
-
             {/* Map through transaction data and display each purchase */}
             {transactionData.map((purchase) => (
               <tr key={purchase.id}>
@@ -58,6 +58,7 @@ const PurchaseHistory = () => {
                 <td>{purchase.product_name}</td> {/* Product name */}
                 <td>{purchase.quantity}</td>
                 <td>₱{purchase.total}</td>
+                <td>{purchase.payment_mode}</td>
               </tr>
             ))}
           </tbody>
