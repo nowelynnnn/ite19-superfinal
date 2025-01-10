@@ -48,7 +48,9 @@ const Admin = () => {
       .includes(searchTerm.toLowerCase());
     const matchesBranch =
       selectedBranch === "All" || transaction.branch_name === selectedBranch;
-    const matchesToday = !filterByToday || transaction.date === todayDate; // Check for today's sales
+
+    // Check for today's sales
+    const matchesToday = !filterByToday || transaction.date === todayDate; 
     return matchesSearch && matchesBranch && matchesToday;
   });
 
@@ -68,6 +70,7 @@ const Admin = () => {
     (a, b) => b[1] - a[1]
   );
 
+  // Function to export the filtered transactions to an Excel file
   const exportToExcel = () => {
     // Prepare data for Excel
     const worksheetData = filteredTransactions.map((transaction) => ({
@@ -78,8 +81,10 @@ const Admin = () => {
       "Mode of Payment": transaction.payment_mode,
     }));
 
-    // Create a worksheet and a workbook
+    // Create a worksheet from the prepared data
     const worksheet = XLSX.utils.json_to_sheet(worksheetData);
+
+     // Create a new workbook and append the worksheet to it
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Transactions");
 
@@ -169,12 +174,15 @@ const Admin = () => {
                 <h2 className="text-lg font-semibold text-success">
                   Transaction History
                 </h2>
+
+                {/* Show Todays Sale */}
                 <div className="form-control">
                   <label className="label cursor-pointer">
+                    {/* Checkbox for filtering today's sales */}
                     <input
                       type="checkbox"
                       className="checkbox checkbox-success"
-                      checked={filterByToday}
+                      checked={filterByToday} // Checkbox state is controlled by `filterByToday`
                       onChange={(e) => setFilterByToday(e.target.checked)}
                     />
                     <span className="label-text ms-2">Show Today's Sales</span>
